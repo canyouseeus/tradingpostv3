@@ -19,6 +19,8 @@ import { generateTimeframeData, generateChartData } from '../utils/analytics';
 export function VendorDashboard() {
   const [showCreateCampaign, setShowCreateCampaign] = useState(false);
   const [campaignType, setCampaignType] = useState('');
+  const [costPrice, setCostPrice] = useState<number>(0);
+  const [retailPrice, setRetailPrice] = useState<number>(0);
   const [lifetimeTracking, setLifetimeTracking] = useState(true);
   const [autoPayout, setAutoPayout] = useState(true);
   const [enableMLM, setEnableMLM] = useState(false);
@@ -111,6 +113,11 @@ export function VendorDashboard() {
 
   const totalMLMTierPercentage = mlmTiers.reduce((sum, tier) => sum + tier.percentage, 0);
 
+  // Calculate profit in real time
+  const calculatedProfit = retailPrice - costPrice;
+  const tradingPostFee = calculatedProfit * 0.03; // 3% fee
+  const availableForAffiliates = calculatedProfit - tradingPostFee;
+
   const handleMLMTierChange = (level: number, percentage: number) => {
     setMLMTiers(prev => prev.map(tier => 
       tier.level === level ? { ...tier, percentage } : tier
@@ -170,11 +177,25 @@ export function VendorDashboard() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Cost Price ($)</Label>
-                  <Input type="number" step="0.01" className="bg-black border-white/20 text-white" placeholder="49.99" />
+                  <Input 
+                    type="number" 
+                    step="0.01" 
+                    value={costPrice || ''} 
+                    onChange={(e) => setCostPrice(parseFloat(e.target.value) || 0)}
+                    className="bg-black border-white/20 text-white" 
+                    placeholder="49.99" 
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Retail Price ($)</Label>
-                  <Input type="number" step="0.01" className="bg-black border-white/20 text-white" placeholder="99.99" />
+                  <Input 
+                    type="number" 
+                    step="0.01" 
+                    value={retailPrice || ''} 
+                    onChange={(e) => setRetailPrice(parseFloat(e.target.value) || 0)}
+                    className="bg-black border-white/20 text-white" 
+                    placeholder="99.99" 
+                  />
                 </div>
               </div>
 
@@ -182,15 +203,15 @@ export function VendorDashboard() {
                 <div className="text-sm space-y-1">
                   <div className="flex justify-between">
                     <span className="text-white/70">Calculated Profit:</span>
-                    <span className="text-[#f7931a]">$50.00</span>
+                    <span className="text-[#f7931a]">${calculatedProfit >= 0 ? calculatedProfit.toFixed(2) : '0.00'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/70">TRADING POST Fee (3%):</span>
-                    <span>$1.50</span>
+                    <span>${tradingPostFee >= 0 ? tradingPostFee.toFixed(2) : '0.00'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-white/70">Available for Affiliates:</span>
-                    <span className="text-white">$48.50</span>
+                    <span className="text-white">${availableForAffiliates >= 0 ? availableForAffiliates.toFixed(2) : '0.00'}</span>
                   </div>
                 </div>
               </Card>
